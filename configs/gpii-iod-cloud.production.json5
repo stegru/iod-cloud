@@ -1,0 +1,15 @@
+{
+    "type": "iodCloud.config.production",
+    "options": {
+        "gradeNames": ["fluid.component"],
+        "distributeOptions": {
+            "iodServer": {
+                "record": true,
+                "target": "{that iodServer}.options.production"
+            }
+        }
+    },
+    "mergeConfigs": [
+        "%gpii-iod-cloud/configs/gpii-iod-cloud.base.json5"
+    ]
+}

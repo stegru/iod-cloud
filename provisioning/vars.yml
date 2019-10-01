@@ -1,0 +1,92 @@
+---
+# Common variables for universal shared between both
+# Docker and Vagrant builds
+
+
+iod_cloud_domain: iod-test.net
+# top domain name for the iod-server's sub-domains (the zone which this server controls)
+iod_clients_domain: "clients.{{ iod_cloud_domain }}"
+# domain name that the iod-servers use connect to this host (required for the SSL certificate)
+iod_api_domain: "api.{{ iod_clients_domain }}"
+# IP address which iod_api_domain should resolve to (ie, this machine). Undefine to autodetect
+#iod_external_ip: "1.2.3.4"
+
+# where the writable config is put
+iod_config_root: /var/gpii-iod-cloud
+iod_config_dir: "{{ iod_config_root }}/app"
+iod_config_pdns: "{{ iod_config_root }}/pdns"
+
+iod_dns_database: "{{ iod_config_pdns }}/gpii-iod-app.sqlite"
+
+
+iod_pdns_apikey: "{{ lookup('password', '{{ iod_config_dir }}/pdns-apikey.passwd length=20 chars=ascii_letters,digits') }}"
+iod_pdns_password: "{{ lookup('password', '{{ iod_config_dir }}/pdns-web.passwd length=20 chars=ascii_letters,digits') }}"
+
+
+##
+# Please refer to https://github.com/idi-ops/ansible-nodejs/blob/master/defaults/main.yml
+# for documentation related to these variables
+nodejs_app_name: gpii-iod-cloud
+nodejs_app_tcp_port: 18091
+nodejs_app_env_vars:
+  - NODE_ENV=gpii-iod-cloud.production
+
+# Currently Node.js 6.x LTS is required by Universal
+nodejs_branch: lts
+
+# If a specific Node.js version is needed, specify it here. If not defined, defaults to the latest within the branch.
+nodejs_version: 10.16.3
+
+
+# If a specific npm version is needed, specify it here
+#nodejs_npm_version: 2.15.1
+
+nodejs_app_start_script: iod-cloud.js
+
+nodejs_app_git_clone: false
+
+
+##
+# nginx config
+#
+nginx_enable: true
+nginx_start: false
+
+ssl_path: /etc/ssl/private
+ssl_hostname: localhost
+ssl_file_prefix: "{{ ssl_path }}/{{ ssl_hostname }}."
+
+nginx_debug_output: true
+
+# Upload the main nginx config
+nginx_main_template_enable: true
+nginx_main_template:
+  template_file: "{{ playbook_dir }}/templates/nginx.conf"
+  conf_file_name: default.conf
+  conf_file_location: /etc/nginx/conf.d/
+
+# Upload the http nginx config
+nginx_http_template_enable: true
+nginx_http_template:
+  default:
+    template_file: "{{ playbook_dir }}/templates/iod-cloud.nginx.conf"
+    conf_file_name: default.conf
+    conf_file_location: /etc/nginx/conf.d/
+
+##
+# PowerDNS
+#
+
+
+pdns_backends:
+  gsqlite3:
+    database: "{{ iod_dns_database }}"
+    dnssec: yes
+pdns_sqlite_databases_locations:
+  - "{{ iod_dns_database }}"
+
+# used by pdns-config.yml:
+iod_pdns_initial_data: "{{ playbook_dir }}/templates/pdns-init.sql"
+
+# New group name that can write to the dns database file
+iod_database_group: "{{ pdns_group }}-db"

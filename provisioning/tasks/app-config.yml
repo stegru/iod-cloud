@@ -1,0 +1,55 @@
+- name: "Create the config directory"
+  file:
+    path: "{{ iod_config_root }}"
+    owner: "root"
+    group: "root"
+    mode: '0755'
+    state: directory
+
+- name: "Create the application config directory"
+  file:
+    path: "{{ iod_config_dir }}"
+    # contains passwords
+    mode: 'g-rwx,o-rwx'
+    owner: "{{ nodejs_app_dev_username if is_vagrant else nodejs_app_username }}"
+    group: "{{ nodejs_app_dev_username if is_vagrant else nodejs_app_username }}"
+    recurse: true
+    state: directory
+
+
+##
+# Allow both pdns and the app to write to the pdns database (not ideal; the app can change everything)
+#
+
+- name: "Creating pdns-db group"
+  group:
+    name: "{{ iod_database_group }}"
+    system: yes
+    state: present
+
+- name: "Adding pdns user to pdns-db group"
+  user:
+    name: "{{ pdns_user }}"
+    groups: "{{ iod_database_group }}"
+    append: yes
+
+- name: "Adding app user to pdns-db group"
+  user:
+    name: "{{ nodejs_app_dev_username if is_vagrant else nodejs_app_username }}"
+    groups: "{{ iod_database_group }}"
+    append: yes
+
+- name: "Set permissions of the pdns database directory"
+  file:
+    path: "{{ iod_dns_database | dirname }}"
+    mode: '0750'
+    group: "{{ iod_database_group }}"
+    state: directory
+
+- name: "Set permissions of the pdns database file"
+  file:
+    path: "{{ iod_dns_database }}"
+    mode: '0660'
+    group: "{{ iod_database_group }}"
+
+

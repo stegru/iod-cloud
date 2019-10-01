@@ -1,0 +1,28 @@
+{
+    "type": "iod.config.base",
+    "options": {
+        "components": {
+            "iodCloudServer": {
+                "type": "kettle.server",
+                "options": {
+                    "configDir": "/var/gpii-iod-cloud/app/",
+                    "port": {
+                        "port": 18091,
+                        "host": "127.0.0.1"
+                    },
+                    "components": {
+                        "serverRegistry": {
+                            "type": "iodCloud.serverRegistry"
+                        }
+                    },
+                    "distributeOptions": {
+                        "databaseFile": {
+                            "record": "/var/gpii-iod-cloud/pdns/gpii-iod-app.sqlite",
+                            "target": "{that iodCloud.powerDNS}.options.databaseFile"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

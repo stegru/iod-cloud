@@ -1,0 +1,38 @@
+- name: Find my public ip
+  uri:
+    url: http://ifconfig.me/ip
+    return_content: yes
+  register: public_ip
+  when: iod_external_ip is undefined
+
+- set_fact: iod_external_ip="{{public_ip.content}}"
+
+- name: Temp file for the pdns SQL
+  tempfile:
+    state: file
+    suffix: pdns-sql
+  register: temp_pdns_sql
+
+- name: Generate pdns config
+  template:
+    src: "{{ iod_pdns_initial_data }}"
+    dest: "{{ temp_pdns_sql.path }}"
+
+- name: Stop pdns
+  systemd:
+    name: pdns
+    state: stopped
+
+- name: Executing pdns SQL
+  # "</dev/null" is required because sqlite3 waits for user input.
+  shell: sqlite3 {{ iod_dns_database|quote }} -batch -init {{ temp_pdns_sql.path|quote }} </dev/null
+
+- name: Cleanup pdns SQL
+  file:
+    path: "{{ temp_pdns_sql.path }}"
+    state: absent
+
+- name: Restart pdns
+  systemd:
+    name: pdns
+    state: started

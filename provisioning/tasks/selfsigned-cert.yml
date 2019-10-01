@@ -1,0 +1,11 @@
+---
+# Tasks to generate a self-signed certificate
+
+- name: Make the private directory
+  file:
+    path: "{{ ssl_path }}"
+    state: directory
+    mode: 0755
+
+- name: Generate the certificate
+  command: openssl req -x509 -newkey rsa:4096 -keyout "{{ ssl_file_prefix }}privkey.pem" -out "{{ ssl_file_prefix }}cert.pem" -days 2 -nodes -subj '/CN=localhost'
