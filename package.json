@@ -8,7 +8,7 @@
     "dependencies": {
         "better-sqlite3": "^5.4.3",
         "infusion": "3.0.0-dev.20180222T160835Z.6e1311a",
-        "json5": "0.5.1",
+        "json5": "2.2.2",
         "kettle": "1.7.1"
     },
     "devDependencies": {
